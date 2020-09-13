@@ -19,6 +19,7 @@
 
     <modules>
         <module>spring-mvc-demo</module>
+        <module>my-spring-mvc</module>
     </modules>
 
 
