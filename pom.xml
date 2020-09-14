@@ -20,6 +20,7 @@
     <modules>
         <module>spring-mvc-demo</module>
         <module>my-spring-mvc</module>
+        <module>ssm</module>
     </modules>
 
 
