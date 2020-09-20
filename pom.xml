@@ -21,6 +21,7 @@
         <module>spring-mvc-demo</module>
         <module>my-spring-mvc</module>
         <module>ssm</module>
+        <module>spring-data-jap-demo</module>
     </modules>
 
 
