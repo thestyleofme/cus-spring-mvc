@@ -43,8 +43,8 @@ public class LoginInterceptor implements HandlerInterceptor {
             }
             return true;
         } else {
-            // 重定向到登录页面
-            response.sendRedirect("index.jsp");
+            // 重定向到登录页面 即首页
+            response.sendRedirect("/");
             return false;
         }
     }

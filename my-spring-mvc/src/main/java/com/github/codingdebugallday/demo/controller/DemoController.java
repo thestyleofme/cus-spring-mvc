@@ -24,9 +24,15 @@ public class DemoController {
     @AutoWired
     private DemoService demoService;
 
-    @RequestMapping("/query")
+    @RequestMapping("/query01")
     @Security({"zhangsan"})
-    public String query(HttpServletRequest request, HttpServletResponse response, String username) {
+    public String query01(HttpServletRequest request, HttpServletResponse response, String username) {
+        return demoService.get(username);
+    }
+
+    @RequestMapping("/query02")
+    @Security({"lisi"})
+    public String query02(HttpServletRequest request, HttpServletResponse response, String username) {
         return demoService.get(username);
     }
 }
