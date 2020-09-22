@@ -3,9 +3,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ssm</title>
+    <title>首页</title>
 </head>
 <body>
-Hello World!
+<form action="/resume/list" method="post">
+    <p><label for="username">username: </label><input type="text" id="username" name="username"/></p>
+    <p><label for="password">password: </label><input type="text" id="password" name="password"/></p>
+    <input type="submit" value="login">
+</form>
 </body>
 </html>

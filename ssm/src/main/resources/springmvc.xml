@@ -18,4 +18,20 @@
     <!--springmvc注解驱动，自动注册最合适的处理器和映射器-->
     <mvc:annotation-driven/>
 
+    <!--配置spring mvc的视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!--配置当前拦截器的url拦截规则，**代表当前目录下及其子目录下的所有url-->
+            <mvc:mapping path="/**"/>
+            <bean class="com.github.codingdebugallday.interceptors.LoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <mvc:resources location="/WEB-INF/html/" mapping="/html/**"/>
+
 </beans>

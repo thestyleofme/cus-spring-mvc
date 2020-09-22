@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.codingdebugallday.mapper.ResumeMapper">
+    <resultMap id="BaseResultMap" type="com.github.codingdebugallday.pojo.Resume">
+        <result column="id" property="id" jdbcType="DECIMAL"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="list" resultMap="BaseResultMap">
+        select id,
+               name,
+               address,
+               phone
+        from resume
+    </select>
+
+    <select id="getById" resultMap="BaseResultMap">
+        select id,
+               name,
+               address,
+               phone
+        from resume
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <insert id="insert" parameterType="com.github.codingdebugallday.pojo.Resume">
+        insert into resume(address, name, phone)
+        values (#{address,jdbcType=VARCHAR},
+                #{name,jdbcType=VARCHAR},
+                #{phone,jdbcType=VARCHAR})
+    </insert>
+
+    <delete id="delete">
+        delete
+        from resume
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <update id="update" parameterType="com.github.codingdebugallday.pojo.Resume">
+        update resume
+        <set>
+            <if test="name!=null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="address!=null">
+                address = #{address,jdbcType=VARCHAR},
+            </if>
+            <if test="phone!=null">
+                phone = #{phone,jdbcType=VARCHAR},
+            </if>
+        </set>
+        <where>
+            id = #{id,jdbcType=BIGINT}
+        </where>
+    </update>
+</mapper>
