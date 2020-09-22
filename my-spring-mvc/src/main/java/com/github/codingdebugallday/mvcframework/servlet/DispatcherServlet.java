@@ -17,10 +17,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.github.codingdebugallday.mvcframework.annotations.AutoWired;
-import com.github.codingdebugallday.mvcframework.annotations.Controller;
-import com.github.codingdebugallday.mvcframework.annotations.RequestMapping;
-import com.github.codingdebugallday.mvcframework.annotations.Service;
+import com.github.codingdebugallday.mvcframework.annotations.*;
 import com.github.codingdebugallday.mvcframework.pojo.Handler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -177,36 +174,59 @@ public class DispatcherServlet extends HttpServlet {
         }
         for (Map.Entry<String, Object> entry : ioc.entrySet()) {
             final Class<?> clazz = entry.getValue().getClass();
-            if (clazz.isAnnotationPresent(Controller.class)) {
-                String baseUrl = "";
-                if (clazz.isAnnotationPresent(RequestMapping.class)) {
-                    baseUrl = clazz.getAnnotation(RequestMapping.class).value();
-                }
-                for (Method method : clazz.getMethods()) {
-                    if (method.isAnnotationPresent(RequestMapping.class)) {
-                        String url = ("/" + baseUrl + "/" + method.getAnnotation(RequestMapping.class).value()).replaceAll("/+", "/");
-                        // 把method所有信息以及url封装为Handler
-                        Handler handler = new Handler(entry.getValue(), method, Pattern.compile(url));
-                        // 处理参数
-                        Map<String, Integer> paramsIndexMapping = handler.getParamsIndexMapping();
-                        Parameter[] parameters = method.getParameters();
-                        for (int i = 0, size = parameters.length; i < size; i++) {
-                            Parameter parameter = parameters[i];
-                            Class<?> parameterType = parameter.getType();
-                            // 如果是HttpServletRequest或HttpServletResponse 参数名为HttpServletRequest或HttpServletResponse
-                            if (parameterType == HttpServletRequest.class || parameterType == HttpServletResponse.class) {
-                                paramsIndexMapping.put(parameterType.getSimpleName(), i);
-                            } else {
-                                // 其他的普通类型
-                                // 为了拿到形参名 idea需要设置java compile 加上 -parameters
-                                // https://stackoverflow.com/questions/39217830/how-to-use-parameters-javac-option-in-intellij
-                                // 或者使用maven-compiler-plugin插件设置编译参数
-                                paramsIndexMapping.put(parameter.getName(), i);
-                            }
+            if (!clazz.isAnnotationPresent(Controller.class)) {
+                continue;
+            }
+            String baseUrl = "";
+            if (clazz.isAnnotationPresent(RequestMapping.class)) {
+                baseUrl = clazz.getAnnotation(RequestMapping.class).value();
+            }
+            for (Method method : clazz.getMethods()) {
+                if (method.isAnnotationPresent(RequestMapping.class)) {
+                    String url = ("/" + baseUrl + "/" + method.getAnnotation(RequestMapping.class).value()).replaceAll("/+", "/");
+                    // 把method所有信息以及url封装为Handler
+                    Handler handler = new Handler(entry.getValue(), method, Pattern.compile(url));
+                    // 处理参数
+                    Map<String, Integer> paramsIndexMapping = handler.getParamsIndexMapping();
+                    Parameter[] parameters = method.getParameters();
+                    for (int i = 0, size = parameters.length; i < size; i++) {
+                        Parameter parameter = parameters[i];
+                        Class<?> parameterType = parameter.getType();
+                        // 如果是HttpServletRequest或HttpServletResponse 参数名为HttpServletRequest或HttpServletResponse
+                        if (parameterType == HttpServletRequest.class || parameterType == HttpServletResponse.class) {
+                            paramsIndexMapping.put(parameterType.getSimpleName(), i);
+                        } else {
+                            // 其他的普通类型
+                            // 为了拿到形参名 idea需要设置java compile 加上 -parameters
+                            // https://stackoverflow.com/questions/39217830/how-to-use-parameters-javac-option-in-intellij
+                            // 或者使用maven-compiler-plugin插件设置编译参数
+                            paramsIndexMapping.put(parameter.getName(), i);
                         }
-                        handlerMapping.add(handler);
                     }
+                    // 与自定义springmvc无关，处理自定义注解@Security，做接口的权限控制
+                    securityHandler(clazz, method, handler);
+                    handlerMapping.add(handler);
                 }
+            }
+        }
+    }
+
+    private void securityHandler(Class<?> clazz, Method method, Handler handler) {
+        List<String> securityUserList = handler.getSecurityUserList();
+        // controller上是否有注解@Security
+        if (clazz.isAnnotationPresent(Security.class)) {
+            Security classSecurityAnno = clazz.getAnnotation(Security.class);
+            String[] value = classSecurityAnno.value();
+            if (value.length > 0) {
+                securityUserList.addAll(Arrays.asList(value));
+            }
+        }
+        // method上是否有注解@Security
+        if (method.isAnnotationPresent(Security.class)) {
+            Security methodSecurityAnno = method.getAnnotation(Security.class);
+            String[] value = methodSecurityAnno.value();
+            if (value.length > 0) {
+                securityUserList.addAll(Arrays.asList(value));
             }
         }
     }
@@ -228,6 +248,19 @@ public class DispatcherServlet extends HttpServlet {
                 response.getWriter().write("404 not found!");
             } catch (IOException e) {
                 logger.error("doDispatch error", e);
+            }
+            return;
+        }
+        // 与自定义springmvc无关，处理自定义注解@Security，做接口的权限控制
+        // 访问Handler时，用户名直接以参数名username紧跟在请求的url后面即可
+        // 比如http://localhost:8080/demo/handle01?username=zhangsan
+        String username = request.getParameter("username");
+        List<String> securityUserList = handler.getSecurityUserList();
+        if (!securityUserList.contains(username)) {
+            try {
+                response.getWriter().write("403 no permission for user: " + username + "!");
+            } catch (IOException e) {
+                logger.error("no permission", e);
             }
             return;
         }

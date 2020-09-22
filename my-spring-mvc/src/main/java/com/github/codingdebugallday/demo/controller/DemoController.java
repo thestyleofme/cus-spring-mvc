@@ -7,6 +7,7 @@ import com.github.codingdebugallday.demo.service.DemoService;
 import com.github.codingdebugallday.mvcframework.annotations.AutoWired;
 import com.github.codingdebugallday.mvcframework.annotations.Controller;
 import com.github.codingdebugallday.mvcframework.annotations.RequestMapping;
+import com.github.codingdebugallday.mvcframework.annotations.Security;
 
 /**
  * <p>
@@ -24,7 +25,8 @@ public class DemoController {
     private DemoService demoService;
 
     @RequestMapping("/query")
-    public String query(HttpServletRequest request, HttpServletResponse response, String name) {
-        return demoService.get(name);
+    @Security({"zhangsan"})
+    public String query(HttpServletRequest request, HttpServletResponse response, String username) {
+        return demoService.get(username);
     }
 }

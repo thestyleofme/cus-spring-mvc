@@ -1,7 +1,9 @@
 package com.github.codingdebugallday.mvcframework.pojo;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -30,12 +32,19 @@ public class Handler {
      * value：参数的顺序
      */
     private Map<String, Integer> paramsIndexMapping;
+    /**
+     * 自定义功能，跟自定义springmvc框架无关
+     * 定义注解@Security（有value属性，接收String数组）
+     * 该注解用于添加在Controller类或者Handler方法上，表明哪些用户拥有访问该Handler方法的权限（注解配置用户名）
+     */
+    private List<String> securityUserList;
 
     public Handler(Object controller,Method method, Pattern pattern) {
         this.controller = controller;
         this.method = method;
         this.pattern = pattern;
         this.paramsIndexMapping = new HashMap<>();
+        this.securityUserList = new ArrayList<>();
     }
 
     public Method getMethod() {
@@ -68,5 +77,13 @@ public class Handler {
 
     public void setParamsIndexMapping(Map<String, Integer> paramsIndexMapping) {
         this.paramsIndexMapping = paramsIndexMapping;
+    }
+
+    public List<String> getSecurityUserList() {
+        return securityUserList;
+    }
+
+    public void setSecurityUserList(List<String> securityUserList) {
+        this.securityUserList = securityUserList;
     }
 }
